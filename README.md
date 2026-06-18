@@ -2,35 +2,23 @@
 
 AI-Powered Recruitment Platform
 
-TalentHub is a modern recruitment and talent management platform designed to help companies streamline their hiring process. The platform provides an intuitive interface for managing candidates, tracking recruitment progress, and analyzing hiring performance.
+## Overview
+
+TalentHub is a smart recruitment platform designed to help companies manage hiring, candidate tracking, and recruitment analytics.
 
 ---
 
 ## Features
 
-### Candidate Management
-- Store and manage candidate profiles
-- Track application status
-- Organize recruitment workflow
-
-### Recruitment Dashboard
-- Real-time hiring overview
-- Recruitment statistics
-- Performance monitoring
-
-### Analytics & Reporting
-- Candidate insights
-- Hiring performance analysis
-- Data visualization dashboard
-
-### User-Friendly Interface
-- Responsive design
-- Modern UI/UX
-- Easy navigation
+- Candidate Management
+- Resume Screening
+- Recruitment Dashboard
+- Analytics & Reporting
+- HR Management Tools
 
 ---
 
-## Technologies Used
+## Technologies
 
 - HTML5
 - CSS3
@@ -49,8 +37,11 @@ final-talent-hub/
 ├── index.html
 ├── assets/
 ├── css/
+│   └── style.css
 ├── js/
+│   └── script.js
 └── docs/
+    └── project-report.md
 ```
 
 ---
@@ -61,46 +52,24 @@ https://mirralow.github.io/final-talent-hub/
 
 ---
 
-## Source Code
+## GitHub Repository
 
 https://github.com/Mirralow/final-talent-hub
 
 ---
 
-## Screenshots
-
-### Homepage
-
-(Add Screenshot Here)
-
-### Dashboard
-
-(Add Screenshot Here)
-
-### Analytics
-
-(Add Screenshot Here)
-
----
-
-## Objectives
-
-The objective of TalentHub is to simplify recruitment processes and improve hiring efficiency through digital tools and data-driven decision making.
-
----
-
 ## Future Improvements
 
-- AI Resume Screening
-- Job Recommendation System
+- AI Resume Matching
 - Interview Scheduling
-- Applicant Tracking System (ATS)
-- Advanced Analytics Dashboard
+- Applicant Tracking System
+- Advanced Analytics
+- Multi-language Support
 
 ---
 
 ## Author
 
-Developed by Mirralow
+Mirralow
 
-Powered by DeepSeek AI and GitHub Pages.
+Built with DeepSeek AI.
