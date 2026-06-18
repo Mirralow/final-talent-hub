@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalentHub · 智能招聘平台</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #eef2ff;
+    --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --text-muted: #64748b;
+    --border: #e2e8f0; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+    --radius: 14px; --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+.dark { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+.navbar { backdrop-filter: blur(12px); background: rgba(255,255,255,0.9); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; height: 64px; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.dark .navbar { background: rgba(15,23,42,0.9); }
+.brand { font-size: 24px; font-weight: 800; background: linear-gradient(135deg,#6366f1,#8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
+.nav-links { display: flex; gap: 4px; }
+.nav-item { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; color: var(--text-muted); transition: var(--transition); }
+.nav-item.active, .nav-item:hover { background: var(--primary-light); color: var(--primary); }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.btn { padding: 10px 20px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; transition: var(--transition); font-family: inherit; }
+.btn-primary { background: linear-gradient(135deg,#6366f1,#4f46e5); color: white; box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
+.btn-primary:hover { box-shadow: 0 4px 16px rgba(99,102,241,0.5); transform: translateY(-1px); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { background: var(--primary-light); border-color: var(--primary); }
+.btn-danger { background: linear-gradient(135deg,#ef4444,#dc2626); color: white; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn-xs { padding: 4px 8px; font-size: 12px; }
+.container { max-width: 1200px; margin: 24px auto; padding: 0 24px; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.card { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 20px; transition: var(--transition); }
+.card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.job-list { display: flex; flex-direction: column; gap: 12px; }
+.job-item { display: flex; justify-content: space-between; align-items: center; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); transition: var(--transition); animation: fadeIn 0.3s ease; }
+.job-item:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.3px; }
+.badge-success { background: linear-gradient(135deg,#d1fae5,#a7f3d0); color: #065f46; }
+.badge-danger { background: linear-gradient(135deg,#fee2e2,#fecaca); color: #991b1b; animation: pulse 2s infinite; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; background: var(--bg); color: var(--text); transition: var(--transition); outline: none; font-family: inherit; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+.form-group { margin-bottom: 14px; }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 200; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--card); border-radius: 16px; padding: 28px; max-width: 700px; width: 95%; max-height: 85vh; overflow-y: auto; animation: fadeIn 0.2s ease; }
+.close-btn { position: absolute; top: 16px; right: 16px; border: none; background: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
+.toast { position: fixed; bottom: 24px; right: 24px; background: linear-gradient(135deg,#6366f1,#4f46e5); color: white; padding: 12px 24px; border-radius: 10px; z-index: 999; opacity: 0; transition: opacity 0.3s; font-weight: 500; box-shadow: 0 4px 16px rgba(99,102,241,0.4); }
+.toast.show { opacity: 1; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.stat-card { background: var(--card); border-radius: var(--radius); padding: 24px; text-align: center; transition: var(--transition); border: 1px solid var(--border); position: relative; overflow: hidden; }
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(99,102,241,0.15); }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg,var(--primary),#8b5cf6); }
+.stat-title { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 36px; font-weight: 800; background: linear-gradient(135deg,var(--primary),#8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+table { width: 100%; border-collapse: collapse; }
+th { background: linear-gradient(135deg,var(--primary-light),rgba(99,102,241,0.03)); padding: 12px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+tr:hover td { background: rgba(99,102,241,0.03); }
+.progress-bar { background: var(--border); border-radius: 10px; height: 8px; overflow: hidden; width: 100%; }
+.progress-fill { background: linear-gradient(90deg,var(--primary),#8b5cf6); border-radius: 10px; height: 100%; transition: width 0.6s ease; }
+.kanban-col { min-width: 180px; transition: all 0.2s; border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--card); }
+.kanban-card { padding: 8px; margin: 4px 0; background: var(--bg); border-radius: 8px; cursor: grab; font-size: 13px; transition: all 0.15s; }
+.kanban-card:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+@media (max-width: 768px) { .dashboard-grid { grid-template-columns: repeat(2,1fr); } .container { padding: 0 12px; } .nav-item { padding: 6px 10px; font-size: 12px; } }
+
+        /* ==== v3 Premium Enhancements ==== */
+        /* Glassmorphism cards */
+        .card { position: relative; overflow: hidden; }
+        .card::after { content: ''; position: absolute; top: 0; right: 0; width: 150px; height: 150px; background: radial-gradient(circle, rgba(99,102,241,0.03), transparent 70%); pointer-events: none; }
+        .stat-card::after { content: none; }
+
+        /* Skeleton loading for dynamic content */
+        @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
+
+        /* Interactive hover cards */
+        .job-item { border-left: 3px solid transparent; }
+        .job-item:hover { border-left-color: var(--primary); padding-left: 21px; }
+
+        /* Enhanced inputs */
+        .form-group label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.3px; }
+        input[type="date"], input[type="time"] { cursor: pointer; }
+
+        /* Better select */
+        select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; padding-right: 36px; }
+
+        /* Tags/chips */
+        .tag { display: inline-block; padding: 3px 8px; background: var(--primary-light); color: var(--primary); border-radius: 6px; font-size: 12px; font-weight: 500; margin: 2px; }
+
+        /* Quick action float button */
+        .fab { position: fixed; bottom: 28px; right: 28px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 6px 20px rgba(99,102,241,0.4); z-index: 90; transition: var(--transition); display: flex; align-items: center; justify-content: center; }
+        .fab:hover { transform: scale(1.05); box-shadow: 0 8px 30px rgba(99,102,241,0.6); }
+
+        /* Timeline */
+        .timeline { position: relative; padding-left: 24px; }
+        .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+        .timeline-item { position: relative; margin-bottom: 16px; padding-left: 16px; }
+        .timeline-item::before { content: ''; position: absolute; left: -20px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); }
+
+        /* Score bar */
+        .score-bar { display: flex; gap: 4px; align-items: center; }
+        .score-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+        .score-dot.filled { background: var(--primary); }
+
+        /* Job type badge */
+        .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .type-full { background: #dbeafe; color: #1e40af; }
+        .type-intern { background: #fef3c7; color: #92400e; }
+
+        /* Count badge animation */
+        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+        .new-badge { animation: popIn 0.3s ease-out; }
+
+        /* Tooltip */
+        [data-tooltip] { position: relative; }
+        [data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 4px 10px; border-radius: 6px; font-size: 12px; white-space: nowrap; z-index: 10; pointer-events: none; }
+
+        /* Section divider */
+        .section-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 20px 0; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .empty-state-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+
+        /* Company card */
+        .company-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); transition: var(--transition); }
+        .company-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+        .company-rating { display: flex; align-items: center; gap: 4px; }
+
+</style>
+</head>
+<body>
+<div class="navbar">
+    <div class="nav-left"><div class="brand">🧠 TalentHub</div><div class="nav-links" id="navLinks"></div></div>
+    <div class="nav-right" id="authArea"></div>
+</div>
+<div class="toast" id="toast"></div>
+<button class="fab" onclick="fabAction()" title="快捷操作" data-tooltip="快捷操作">+</button>
+<div class="container" id="pageContainer"></div>
+
+<script>
+// ========== DB ==========
+const DB = {users:'u',curr:'c',jobs:'j',cands:'cd',resumes:'r',apps:'a',favs:'f',notifs:'n',chats:'ch',ivs:'iv',companies:'co',talent:'ta',forum:'fo',certs:'ce',blocked:'bl'};
+const get = k => { const v = localStorage.getItem(k); if(v===null){ if([DB.users,DB.jobs,DB.apps,DB.ivs,DB.forum].includes(k)) return []; return {}; } return JSON.parse(v); };
+const set = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+const toast = msg => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
+
+// ========== INIT DATA ==========
+(function init(){
+if(!get(DB.users).length) set(DB.users, [
+    {email:'hr@talenthub.com',password:'123456',role:'hr',name:'李经理'},
+    {email:'hr2@talenthub.com',password:'123456',role:'hr',name:'王HR'},
+    {email:'seeker@talenthub.com',password:'123456',role:'jobseeker',name:'求职者'},
+    {email:'alex@email.com',password:'123456',role:'jobseeker',name:'Alex Chen'},
+    {email:'lisa@email.com',password:'123456',role:'jobseeker',name:'Lisa Wang'}
+]);
+if(!get(DB.jobs).length) set(DB.jobs, [
+    {id:1,title:'高级Python后端工程师',location:'上海·浦东',salary:'30K-50K',tags:'Python,FastAPI,Docker,PostgreSQL,Redis',companyId:1,desc:'负责核心业务系统架构设计与开发，优化高并发场景服务性能，带领3-5人团队。',type:'全职',urgent:true},
+    {id:2,title:'产品经理（SaaS方向）',location:'北京·海淀',salary:'25K-40K',tags:'SaaS,B端,数据分析,用户研究',companyId:2,desc:'负责企业级SaaS产品需求分析与功能规划，推动产品从0到1的迭代。',type:'全职',urgent:false},
+    {id:3,title:'前端开发工程师（React）',location:'深圳·南山',salary:'25K-45K',tags:'React,TypeScript,Next.js,Tailwind',companyId:3,desc:'参与核心产品前端架构设计，使用React+TypeScript构建高性能Web应用。',type:'全职',urgent:true},
+    {id:4,title:'数据分析师',location:'上海·静安',salary:'20K-35K',tags:'SQL,Python,Tableau,数据可视化',companyId:1,desc:'负责业务数据分析与洞察输出，构建数据看板和指标体系。',type:'全职',urgent:false},
+    {id:5,title:'DevOps工程师',location:'杭州·余杭',salary:'28K-48K',tags:'Kubernetes,Docker,CI/CD,AWS,Terraform',companyId:4,desc:'搭建和维护云原生基础设施，设计CI/CD流水线，保障线上稳定性。',type:'全职',urgent:true},
+    {id:6,title:'UX/UI设计师',location:'北京·朝阳',salary:'20K-35K',tags:'Figma,用户研究,交互设计,设计系统',companyId:3,desc:'负责产品界面设计和用户体验优化，建立和维护设计规范系统。',type:'全职',urgent:false},
+    {id:7,title:'AI算法工程师（NLP）',location:'上海·徐汇',salary:'40K-70K',tags:'NLP,Transformer,Python,PyTorch,LLM',companyId:5,desc:'研发大语言模型应用，包括对话系统、文本生成、知识图谱。',type:'全职',urgent:true},
+    {id:8,title:'测试开发工程师',location:'深圳·福田',salary:'22K-38K',tags:'自动化测试,Selenium,Python,性能测试',companyId:3,desc:'构建自动化测试框架，制定质量保障策略，推动研发效能提升。',type:'全职',urgent:false},
+    {id:9,title:'Java后端开发（金融）',location:'上海·陆家嘴',salary:'28K-50K',tags:'Java,Spring,微服务,MySQL,分布式',companyId:6,desc:'负责金融核心系统后端开发，参与分布式架构设计和性能优化。',type:'全职',urgent:true},
+    {id:10,title:'新媒体运营经理',location:'广州·天河',salary:'18K-30K',tags:'内容运营,短视频,社群运营,数据分析',companyId:7,desc:'负责品牌新媒体矩阵内容策划与运营，搭建用户增长体系。',type:'全职',urgent:false},
+    {id:11,title:'实习-前端开发',location:'北京·海淀',salary:'200-300/天',tags:'Vue,JavaScript,CSS,HTML',companyId:2,desc:'参与产品前端功能开发，学习和实践现代Web开发技术栈。',type:'实习',urgent:false},
+    {id:12,title:'技术总监/CTO',location:'上海·浦东',salary:'80K-120K',tags:'技术管理,架构设计,团队建设,战略规划',companyId:1,desc:'全面负责公司技术战略制定与执行，管理30+人技术团队。',type:'全职',urgent:true}
+,
+        {id:13,title:'数据工程师（大数据）',location:'北京·西城',salary:'30K-55K',tags:'Spark,Hadoop,Python,ETL,数据仓库',companyId:4,desc:'负责大数据平台建设，设计ETL流程，构建实时和离线数据处理管道。',type:'全职',urgent:true},
+        {id:14,title:'SRE运维工程师',location:'杭州·西湖',salary:'25K-42K',tags:'Linux,Prometheus,Grafana,自动化运维',companyId:4,desc:'负责线上服务稳定性保障，建设监控告警体系。',type:'全职',urgent:false},
+        {id:15,title:'游戏策划师',location:'深圳·南山',salary:'22K-40K',tags:'游戏设计,数值策划,关卡设计',companyId:3,desc:'负责手游核心玩法设计和数值体系搭建。',type:'全职',urgent:false},
+        {id:16,title:'法务经理',location:'上海·浦东',salary:'25K-40K',tags:'公司法,合同审核,知识产权,合规',companyId:6,desc:'负责公司法律事务管理，合同审核与风险管控。',type:'全职',urgent:false},
+        {id:17,title:'品牌设计师',location:'广州·天河',salary:'18K-30K',tags:'品牌设计,VI,C4D,插画,动效',companyId:7,desc:'负责品牌视觉体系搭建与维护，输出高质量视觉物料。',type:'全职',urgent:false},
+        {id:18,title:'Go后端开发工程师',location:'北京·海淀',salary:'30K-50K',tags:'Go,gRPC,微服务,Kubernetes,消息队列',companyId:2,desc:'使用Go语言开发高并发微服务系统，参与技术选型。',type:'全职',urgent:true},
+        {id:19,title:'跨境电商运营',location:'深圳·龙岗',salary:'18K-28K',tags:'亚马逊,Shopee,选品,广告投放',companyId:7,desc:'负责跨境电商平台店铺运营，制定选品策略和广告投放方案。',type:'全职',urgent:false},
+        {id:20,title:'机器学习工程师（CV）',location:'上海·张江',salary:'35K-65K',tags:'计算机视觉,深度学习,OpenCV,PyTorch',companyId:5,desc:'研发计算机视觉算法，推动算法在工业场景落地。',type:'全职',urgent:true},
+        {id:21,title:'CEO助理',location:'上海·浦东',salary:'20K-35K',tags:'战略规划,商业分析,项目管理,英语',companyId:1,desc:'协助CEO战略规划和日常管理，参与重要商务谈判。',type:'全职',urgent:false},
+        {id:22,title:'区块链开发工程师',location:'北京·海淀',salary:'35K-60K',tags:'Solidity,以太坊,智能合约,DeFi,Web3',companyId:3,desc:'负责区块链底层技术研发和智能合约开发。',type:'全职',urgent:true},
+        {id:23,title:'客户成功经理',location:'上海·静安',salary:'20K-32K',tags:'SaaS,客户关系,培训,续约管理',companyId:2,desc:'负责KA客户全生命周期管理，提升产品采用率和满意度。',type:'全职',urgent:false},
+        {id:24,title:'安全工程师',location:'深圳·南山',salary:'30K-50K',tags:'渗透测试,SDL,安全架构,应急响应',companyId:4,desc:'负责公司安全体系建设，开展渗透测试和漏洞挖掘。',type:'全职',urgent:true},
+        {id:25,title:'实习-数据分析',location:'上海·静安',salary:'180-250/天',tags:'SQL,Excel,Python,数据可视化',companyId:1,desc:'协助数据分析师完成日常数据提取和分析任务。',type:'实习',urgent:false}]);
+if(Object.keys(get(DB.cands)).length===0) set(DB.cands, {
+    '高级Python后端工程师':[
+        {name:'张伟',years:6,edu:'硕士',keywords:'Python,FastAPI,Docker,PostgreSQL',resume:'6年Python后端，精通FastAPI和Django，主导过日活百万级系统架构设计',score:92,status:'通过'},
+        {name:'陈思远',years:4,edu:'本科',keywords:'Python,Flask,MySQL,Redis,Docker',resume:'4年Python Web开发，擅长RESTful API设计和数据库优化',score:78,status:'待查看'},
+        {name:'刘洋',years:8,edu:'硕士',keywords:'Python,Go,Kubernetes,微服务',resume:'8年后端开发，5年架构经验，曾就职于字节跳动和美团',score:95,status:'面试邀请'},
+        {name:'赵敏',years:3,edu:'本科',keywords:'Python,Django,PostgreSQL',resume:'3年Python开发，负责电商后台系统重构和性能优化',score:65,status:'待查看'}
+    ],
+    '产品经理（SaaS方向）':[
+        {name:'王小明',years:5,edu:'硕士',keywords:'SaaS,B端,用户研究,数据分析',resume:'5年B端产品经验，主导过3款SaaS产品从0到1，月活10万+',score:91,status:'通过'},
+        {name:'林悦',years:3,edu:'本科',keywords:'产品设计,用户调研,PRD',resume:'3年产品经理，擅长用户需求挖掘和产品迭代规划',score:72,status:'待查看'}
+    ],
+    '前端开发工程师（React）':[
+        {name:'周杰',years:5,edu:'本科',keywords:'React,TypeScript,Next.js,GraphQL',resume:'5年前端开发，主导大型SPA应用重构，熟悉微前端架构',score:88,status:'通过'},
+        {name:'黄晓婷',years:2,edu:'本科',keywords:'React,JavaScript,CSS',resume:'2年前端开发，参与过3个企业级项目的开发',score:60,status:'待查看'},
+        {name:'吴凯',years:7,edu:'硕士',keywords:'React,Vue,Angular,Webpack,Vite',resume:'7年前端架构师，腾讯T9级别，擅长性能优化和工程化建设',score:94,status:'面试邀请'}
+    ],
+    '数据分析师':[
+        {name:'李雪',years:4,edu:'硕士',keywords:'SQL,Python,Tableau,AB测试',resume:'4年数据分析经验，擅长业务指标体系和用户行为分析',score:85,status:'待查看'},
+        {name:'孙鹏',years:6,edu:'本科',keywords:'SQL,Hive,Spark,Python',resume:'6年大数据分析师，搭建过完整的用户画像和数据仓库',score:90,status:'通过'}
+    ],
+    'DevOps工程师':[
+        {name:'郑浩',years:6,edu:'本科',keywords:'Kubernetes,Docker,CI/CD,Terraform,AWS',resume:'6年DevOps经验，管理过1000+节点K8s集群',score:93,status:'面试邀请'},
+        {name:'马丽',years:3,edu:'本科',keywords:'Docker,Jenkins,Linux,Nginx',resume:'3年运维开发经验，熟悉CI/CD流水线搭建',score:68,status:'待查看'}
+    ],
+    'AI算法工程师（NLP）':[
+        {name:'高远',years:5,edu:'博士',keywords:'NLP,Transformer,BERT,GPT,LLM,PyTorch',resume:'中科院博士，5年NLP研究经验，发表顶会论文8篇',score:97,status:'通过'},
+        {name:'徐晨',years:3,edu:'硕士',keywords:'NLP,PyTorch,BERT,文本分类',resume:'3年NLP算法工程师，参与过对话系统和情感分析项目',score:80,status:'待查看'}
+    ],
+    '测试开发工程师':[
+        {name:'丁磊',years:5,edu:'本科',keywords:'自动化测试,Selenium,Python,性能测试',resume:'5年测试开发，搭建过完整的自动化测试体系',score:87,status:'待查看'}
+    ],
+    'Java后端开发（金融）':[
+        {name:'何强',years:7,edu:'硕士',keywords:'Java,Spring Cloud,微服务,分布式事务',resume:'7年金融后端开发，主导支付系统架构升级，日交易额过亿',score:91,status:'通过'},
+        {name:'沈洁',years:4,edu:'本科',keywords:'Java,Spring Boot,MyBatis,MySQL',resume:'4年Java开发，参与银行核心系统开发，熟悉金融业务',score:75,status:'待查看'}
+    ],
+    '新媒体运营经理':[
+        {name:'林雨欣',years:5,edu:'本科',keywords:'内容策划,短视频,抖音,小红书,社群运营',resume:'5年新媒体运营，曾打造百万粉丝账号',score:83,status:'待查看'}
+    ],
+    '技术总监/CTO':[
+        {name:'赵云飞',years:15,edu:'硕士',keywords:'技术管理,架构设计,团队建设,战略规划',resume:'15年技术管理经验，曾任阿里P9技术专家，管理过100+人团队',score:96,status:'面试邀请'}
+    ]
+});
+if(!get(DB.companies).length) set(DB.companies, [
+    {id:1,name:'星辰科技',industry:'互联网/AI',size:'800人',score:4.6,founded:'2016',desc:'AI驱动的企业级SaaS平台'},
+    {id:2,name:'云帆软件',industry:'企业服务',size:'1200人',score:4.3,founded:'2014',desc:'领先的企业数字化转型服务商'},
+    {id:3,name:'未来智能',industry:'人工智能',size:'500人',score:4.8,founded:'2019',desc:'专注AI大模型应用落地'},
+    {id:4,name:'极速网络',industry:'云计算',size:'3000人',score:4.4,founded:'2012',desc:'全球领先的云服务提供商'},
+    {id:5,name:'深智研究院',industry:'AI研究',size:'200人',score:4.9,founded:'2020',desc:'顶尖AI研究机构'},
+    {id:6,name:'汇通金融科技',industry:'金融科技',size:'1500人',score:4.5,founded:'2015',desc:'领先的金融科技解决方案提供商'},
+    {id:7,name:'橙光传媒',industry:'新媒体',size:'300人',score:4.1,founded:'2018',desc:'新锐内容创作与MCN机构'}
+]);
+if(!Object.keys(get(DB.resumes)).length) set(DB.resumes, {
+    'seeker@talenthub.com':{name:'求职者',skills:'Python,SQL,数据分析,Excel',education:'本科',experience:'3年互联网数据分析经验'},
+    'alex@email.com':{name:'Alex Chen',skills:'React,TypeScript,Node.js,GraphQL,AWS',education:'硕士',experience:'5年全栈开发，曾就职于字节跳动'},
+    'lisa@email.com':{name:'Lisa Wang',skills:'产品设计,用户研究,Figma,数据分析',education:'硕士',experience:'4年产品经理，主导过2款百万用户级产品'}
+});
+if(!get(DB.apps).length) set(DB.apps, [
+    {email:'seeker@talenthub.com',jobTitle:'数据分析师',time:'2026-06-10 14:30',status:'待查看'},
+    {email:'seeker@talenthub.com',jobTitle:'产品经理（SaaS方向）',time:'2026-06-08 09:15',status:'已查看'},
+    {email:'alex@email.com',jobTitle:'前端开发工程师（React）',time:'2026-06-12 16:00',status:'待查看'},
+    {email:'lisa@email.com',jobTitle:'产品经理（SaaS方向）',time:'2026-06-11 10:30',status:'通过'},
+    {email:'lisa@email.com',jobTitle:'UX/UI设计师',time:'2026-06-09 11:00',status:'已查看'}
+]);
+if(!get(DB.ivs).length) set(DB.ivs, [
+    {jobTitle:'高级Python后端工程师',candidateName:'刘洋',date:'2026-06-18',time:'14:00'},
+    {jobTitle:'前端开发工程师（React）',candidateName:'吴凯',date:'2026-06-19',time:'10:30'},
+    {jobTitle:'AI算法工程师（NLP）',candidateName:'高远',date:'2026-06-18',time:'16:00'},
+    {jobTitle:'DevOps工程师',candidateName:'郑浩',date:'2026-06-20',time:'11:00'}
+]);
+if(!Object.keys(get(DB.favs)).length) set(DB.favs, {'seeker@talenthub.com':[1,3,7]});
+if(!get(DB.forum).length) set(DB.forum, [
+    {title:'面试字节跳动的经验分享',content:'三轮技术面+HR面，考察算法和系统设计。面试官很专业。',author:'匿名用户',replies:[{author:'HR小李',text:'感谢分享！'}]},
+    {title:'今年前端行情怎么样？',content:'React方向需求挺旺，Next.js+TypeScript是主流。面试要求明显提高了。',author:'Alex Chen',replies:[{author:'前端老鸟',text:'确实，现在更看重综合能力。'}]},
+    {title:'Python vs Java后端怎么选？',content:'一个AI方向一个金融方向，薪资差不多。',author:'选择困难',replies:[{author:'十年老码农',text:'看兴趣。AI是未来，金融更稳。'}]}
+]);
+if(!Object.keys(get(DB.notifs)).length) set(DB.notifs, {
+    'seeker@talenthub.com':[{text:'您的简历已被星辰科技查看',time:'2026-06-15 10:30'},{text:'云帆软件邀请您参加面试',time:'2026-06-14 15:00'}],
+    'alex@email.com':[{text:'未来智能对您的简历感兴趣',time:'2026-06-16 09:00'}]
+});
+})();
+
+// ========== AUTH ==========
+function curUser(){const e=get(DB.curr);return e?get(DB.users).find(u=>u.email===e):null;}
+function curRole(){return curUser()?.role;}
+
+// ========== NAV ==========
+function buildNav(){
+    var r=curRole();
+    var html=r==='hr'?
+        '<div class="nav-item active" data-page="hr-jobs">职位</div><div class="nav-item" data-page="hr-talent">人才库</div><div class="nav-item" data-page="hr-messages">消息</div><div class="nav-item" data-page="hr-dashboard">看板</div><div class="nav-item" data-page="hr-settings">设置</div>':
+        r==='jobseeker'?
+        '<div class="nav-item active" data-page="js-jobs">找工作</div><div class="nav-item" data-page="js-companies">公司</div><div class="nav-item" data-page="js-community">社区</div><div class="nav-item" data-page="js-tools">工具</div><div class="nav-item" data-page="js-profile">我的</div>':
+        '<div class="nav-item active" data-page="js-jobs">找工作</div><div class="nav-item" data-page="js-companies">公司</div>';
+    document.getElementById('navLinks').innerHTML=html;
+    document.querySelectorAll('.nav-item').forEach(n=>n.onclick=function(){
+        var p=n.dataset.page;
+        if(!curUser()&&(p.includes('hr')||p==='js-profile'||p==='js-tools')){toast('请先登录');showLogin();return;}
+        document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+        n.classList.add('active');renderPage(p);
+    });
+    updateAuthUI();
+}
+function updateAuthUI(){
+    var u=curUser();
+    var ncount=u?(get(DB.notifs)[u.email]||[]).length:0;
+    document.getElementById('authArea').innerHTML=u?
+        '<span onclick="showNotifs()" style="cursor:pointer;font-size:18px">'+String.fromCharCode(128276)+' '+(ncount?'<span style="background:var(--danger);color:white;border-radius:50%;padding:0 6px;font-size:11px;">'+ncount+'</span>':'')+'</span>'+
+        '<span style="font-size:13px;color:var(--text-muted)">'+u.name+'</span>'+
+        '<button class="btn btn-sm btn-outline" onclick="logout()">退出</button>'+
+        '<button class="btn btn-sm btn-outline" onclick="toggleDark()" title="暗色模式">'+String.fromCharCode(127763)+'</button>'+
+        '<button class="btn btn-sm btn-outline" onclick="if(confirm(\'重置所有数据？\')){Object.values(DB).forEach(function(k){localStorage.removeItem(k)});location.reload();}" title="重置">'+String.fromCharCode(9851)+'</button>'
+        :'<button class="btn btn-sm btn-outline" onclick="showLogin()">登录</button><button class="btn btn-sm btn-primary" onclick="showRegister()">注册</button><button class="btn btn-sm btn-outline" onclick="toggleDark()">'+String.fromCharCode(127763)+'</button>';
+}
+function toggleDark(){document.body.classList.toggle('dark');}
+
+function renderPage(p){
+    var pages={'js-jobs':renderJSJobs,'js-companies':renderCompanies,'js-community':renderCommunity,'js-tools':renderTools,'js-profile':renderProfile,'hr-jobs':renderHRJobs,'hr-talent':renderHRTalent,'hr-messages':renderHRMessages,'hr-dashboard':renderHRDashboard,'hr-settings':renderHRSettings};
+    if(pages[p]) pages[p]();
+}
+
+// ==================== JOBSEEKER PAGES ====================
+function renderJSJobs(){
+    document.getElementById('pageContainer').innerHTML=
+    '<div class="card"><h2 style="margin-bottom:16px;">发现理想职位</h2>'+
+    '<div style="display:flex;gap:12px;margin-bottom:16px;">'+
+    '<div class="form-group" style="flex:2;margin:0"><input id="kw" placeholder="职位/技能"></div>'+
+    '<div class="form-group" style="flex:1;margin:0"><input id="loc" placeholder="城市"></div>'+
+    '<button class="btn btn-primary" onclick="searchJobs()">搜索</button></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+    '<button class="btn btn-outline btn-sm" onclick="renderJobs(get(DB.jobs).filter(function(j){return j.urgent}))">急聘</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="renderJobs(get(DB.jobs).filter(function(j){return j.location.includes(\'上海\')}))">上海</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="requireLogin(aiRecommend)">AI推荐</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="requireLogin(openCompare)">对比</button></div></div>'+
+    '<div id="jobList" class="job-list"></div>';
+    renderJobs(get(DB.jobs));
+}
+function renderJobs(jobs){
+    var c=document.getElementById('jobList');if(!c)return;
+    var favs=curUser()?(get(DB.favs)[curUser().email]||[]):[];
+    var blocked=curUser()?(get(DB.blocked)[curUser().email]||[]):[];
+    var filtered=jobs.filter(function(j){return !blocked.includes(j.companyId);});
+    c.innerHTML=filtered.length?filtered.map(function(j){
+        var comp=get(DB.companies).find(function(cc){return cc.id===j.companyId;})||{name:'未知'};
+        return '<div class="job-item"><div style="flex:1;"><h3>'+j.title+' '+(j.urgent?'<span class="badge badge-danger">急聘</span>':'')+'</h3>'+
+        '<div style="color:var(--text-muted);font-size:13px;margin-top:4px;">'+comp.name+' | '+j.location+' | '+j.salary+' | '+j.tags.split(',').map(function(t){return '<span class="badge badge-success">'+t+'</span>';}).join(' ')+'</div>'+
+        '<div style="font-size:13px;color:var(--text-muted);margin-top:6px;">'+j.desc+'</div></div>'+
+        '<div style="display:flex;gap:8px;flex-shrink:0;">'+
+        '<button class="btn btn-sm btn-outline" onclick="toggleFav('+j.id+')">'+(favs.includes(j.id)?'★':'☆')+'</button>'+
+        '<button class="btn btn-sm btn-outline" onclick="requireLogin(function(){openChat(\''+j.title+'\')})">💬</button>'+
+        '<button class="btn btn-sm btn-primary" onclick="requireLogin(function(){applyJob(\''+j.title+'\')})">投递</button>'+
+        '<button class="btn btn-sm btn-outline" onclick="blockCompany('+j.companyId+')">🚫</button></div></div>';
+    }).join(''):'<div class="card" style="text-align:center;padding:40px;color:var(--text-muted)"><h3>📭 暂无匹配职位</h3><p>试试其他搜索条件</p></div>';
+}
+function searchJobs(){
+    var kw=document.getElementById('kw').value.toLowerCase();
+    var loc=document.getElementById('loc').value.toLowerCase();
+    var jobs=get(DB.jobs);
+    if(kw) jobs=jobs.filter(function(j){return j.title.toLowerCase().includes(kw)||j.tags.toLowerCase().includes(kw);});
+    if(loc) jobs=jobs.filter(function(j){return j.location.toLowerCase().includes(loc);});
+    renderJobs(jobs);
+}
+function toggleFav(id){
+    var email=curUser().email;var favs=get(DB.favs);
+    if(!favs[email]) favs[email]=[];
+    var idx=favs[email].indexOf(id);idx>-1?favs[email].splice(idx,1):favs[email].push(id);
+    set(DB.favs,favs);renderJobs(get(DB.jobs));
+}
+function applyJob(title){
+    var email=curUser().email;
+    get(DB.apps).push({email:email,jobTitle:title,time:new Date().toLocaleString(),status:'待查看'});
+    set(DB.apps,get(DB.apps));
+    var cands=get(DB.cands);if(!cands[title]) cands[title]=[];
+    var r=get(DB.resumes)[email]||{};
+    cands[title].push({name:r.name||email.split('@')[0],years:2,edu:r.education||'本科',keywords:r.skills||'',resume:r.experience||'',score:60,status:'待查看'});
+    set(DB.cands,cands);toast('投递成功');
+}
+function blockCompany(cid){
+    var email=curUser().email;var b=get(DB.blocked);if(!b[email]) b[email]=[];
+    if(!b[email].includes(cid)){b[email].push(cid);set(DB.blocked,b);toast('已屏蔽');}
+    renderJobs(get(DB.jobs));
+}
+function aiRecommend(){
+    var email=curUser().email;var skills=(get(DB.resumes)[email]?.skills||'').toLowerCase().split(/[,\s]+/).filter(Boolean);
+    if(!skills.length) return toast('请先在"我的"中填写技能');
+    var jobs=get(DB.jobs).map(function(j){return Object.assign({},j,{match:skills.filter(function(s){return j.tags.toLowerCase().includes(s);}).length});}).sort(function(a,b){return b.match-a.match;}).slice(0,5);
+    renderJobs(jobs);
+}
+function openCompare(){
+    var jobs=get(DB.jobs);
+    showModal('职位对比 (勾选2-4个)','<div style="margin:12px 0">'+jobs.map(function(j){return '<label style="display:block;margin:6px 0"><input type="checkbox" class="cmp" value="'+j.id+'"> '+j.title+' - '+j.salary+'</label>';}).join('')+'</div><button class="btn btn-primary" onclick="showCompareResult()">对比</button>');
+}
+function showCompareResult(){
+    var checks=document.querySelectorAll('.cmp:checked');
+    if(checks.length<2) return toast('至少选2个');
+    var ids=Array.from(checks).map(function(c){return parseInt(c.value);});
+    var jobs=get(DB.jobs).filter(function(j){return ids.includes(j.id);});
+    var html='<table><tr><th></th>'+jobs.map(function(j){return '<th>'+j.title+'</th>';}).join('')+'</tr>';
+    ['location','salary','type','companyId'].forEach(function(k){
+        html+='<tr><td><strong>'+k+'</strong></td>'+jobs.map(function(j){
+            if(k==='companyId'){var c=get(DB.companies).find(function(cc){return cc.id===j.companyId;});return'<td>'+(c?c.name:'-')+'</td>';}
+            return '<td>'+j[k]+'</td>';
+        }).join('')+'</tr>';
+    });
+    html+='</table>';showModal('对比结果',html);
+}
+function renderCompanies(){
+    var comps=get(DB.companies);
+    document.getElementById('pageContainer').innerHTML='<div class="card"><h2>公司库</h2></div>'+comps.map(function(c){
+        return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><h3>'+c.name+'</h3><div style="color:var(--text-muted);font-size:14px;">'+c.industry+' | '+c.size+' | 成立于 '+c.founded+'</div><div style="margin-top:4px;">'+c.desc+'</div></div><div style="text-align:right;"><div style="font-size:24px;font-weight:700;">'+Array(Math.round(c.score)).fill('★').join('')+'</div><div style="color:var(--text-muted)">'+c.score+'</div></div></div></div>';
+    }).join('');
+}
+function renderCommunity(){
+    var posts=get(DB.forum);
+    document.getElementById('pageContainer').innerHTML='<div class="card"><h2>求职社区</h2><button class="btn btn-primary" onclick="requireLogin(openNewPost)" style="margin:12px 0">发帖</button></div>'+posts.map(function(p,i){
+        return '<div class="card"><h3>'+p.title+'</h3><div style="color:var(--text-muted);font-size:13px;">'+p.author+'</div><p style="margin:8px 0">'+p.content.substring(0,80)+'...</p><small>'+p.replies.length+' 条回复</small> <button class="btn btn-sm btn-outline" onclick="viewPost('+i+')">查看详情</button></div>';
+    }).join('');
+}
+function openNewPost(){showModal('发帖','<div class="form-group"><input id="postTitle" placeholder="标题"></div><div class="form-group"><textarea id="postContent" placeholder="内容" rows="4"></textarea></div><button class="btn btn-primary" onclick="submitPost()">发布</button>');}
+function submitPost(){
+    var posts=get(DB.forum);
+    posts.push({title:document.getElementById('postTitle').value,content:document.getElementById('postContent').value,author:curUser().name,replies:[]});
+    set(DB.forum,posts);closeModal();renderCommunity();
+}
+function viewPost(i){
+    var p=get(DB.forum)[i];
+    showModal(p.title,'<p>'+p.content+'</p><hr style="margin:12px 0"><h4>回复 ('+p.replies.length+')</h4><div style="max-height:200px;overflow-y:auto;">'+p.replies.map(function(r){return '<div style="padding:8px;background:var(--bg);border-radius:8px;margin:4px 0"><strong>'+r.author+'</strong>: '+r.text+'</div>';}).join('')+'</div><div class="form-group" style="margin-top:12px"><input id="replyText" placeholder="写回复..."></div><button class="btn btn-primary" onclick="addReply('+i+')">回复</button>');
+}
+function addReply(i){var text=document.getElementById('replyText').value;var posts=get(DB.forum);posts[i].replies.push({author:curUser().name,text:text});set(DB.forum,posts);closeModal();renderCommunity();}
+
+function renderTools(){
+    document.getElementById('pageContainer').innerHTML='<div class="card"><h2>工具箱</h2><div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">'+
+    '<button class="btn btn-outline" onclick="openAIMock()">AI模拟面试</button>'+
+    '<button class="btn btn-outline" onclick="openSalary()">薪资查询</button>'+
+    '<button class="btn btn-outline" onclick="openCert()">技能认证</button></div></div>';
+}
+function openAIMock(){showModal('AI模拟面试','<div class="form-group"><select id="mockJob"><option>Python工程师</option><option>产品经理</option><option>前端开发</option></select></div><button class="btn btn-primary" onclick="startMock()">开始</button><div id="mockQ"></div>');}
+function startMock(){document.getElementById('mockQ').innerHTML='<div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:8px;"><p><strong>面试官:</strong> 请做一下自我介绍。</p><div class="form-group"><textarea rows="3" placeholder="你的回答..."></textarea></div><button class="btn btn-primary btn-sm" onclick="toast(\'回答已记录\')">提交</button></div>';}
+function openSalary(){showModal('薪资查询','<div class="form-group"><input id="qJob" placeholder="职位"></div><div class="form-group"><input id="qCity" placeholder="城市"></div><button class="btn btn-primary" onclick="document.getElementById(\'salRes\').innerHTML=\'<div style=margin-top:12px;padding:12px;background:var(--primary-light);border-radius:8px;text-align:center;font-size:20px;font-weight:700>\'+document.getElementById(\'qJob\').value+\'在\'+document.getElementById(\'qCity\').value+\'的参考薪资: 25-40K</div>\'">查询</button><div id="salRes"></div>');}
+function openCert(){showModal('技能认证','<div class="form-group"><input id="certInput" placeholder="证书/技能名称"></div><button class="btn btn-primary" onclick="addCert()">添加</button><div id="certList" style="margin-top:12px">'+((get(DB.certs)[curUser().email]||[]).map(function(c){return '<span class="badge badge-success" style="margin:2px">'+c+'</span>';}).join(' ')||'暂无')+'</div>');}
+function addCert(){var e=curUser().email;var c=get(DB.certs);if(!c[e]) c[e]=[];c[e].push(document.getElementById('certInput').value);set(DB.certs,c);closeModal();openCert();}
+
+function renderProfile(){
+    document.getElementById('pageContainer').innerHTML='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">'+
+    '<button class="btn btn-outline btn-sm tab-btn active" data-tab="resume">简历</button>'+
+    '<button class="btn btn-outline btn-sm tab-btn" data-tab="apps">投递记录</button>'+
+    '<button class="btn btn-outline btn-sm tab-btn" data-tab="favs">收藏</button></div><div id="profileContent"></div>';
+    document.querySelectorAll('.tab-btn').forEach(function(t){t.onclick=function(){document.querySelectorAll('.tab-btn').forEach(function(i){i.classList.remove('active');});this.classList.add('active');loadProfileTab(this.dataset.tab);};});
+    loadProfileTab('resume');
+}
+function loadProfileTab(tab){
+    var e=curUser().email;var cont=document.getElementById('profileContent');
+    if(tab==='resume'){
+        var r=get(DB.resumes)[e]||{};
+        cont.innerHTML='<div class="card"><h3>简历</h3>'+
+        '<div class="form-group"><label>姓名</label><input id="rName" value="'+(r.name||'')+'"></div>'+
+        '<div class="form-group"><label>技能（逗号分隔）</label><input id="rSkills" value="'+(r.skills||'')+'" placeholder="如：Python,React,数据分析"></div>'+
+        '<div class="form-group"><label>教育背景</label><input id="rEdu" value="'+(r.education||'')+'" placeholder="如：本科/硕士/博士"></div>'+
+        '<div class="form-group"><label>工作经历</label><textarea id="rExp" rows="3">'+(r.experience||'')+'</textarea></div>'+
+        '<div style="display:flex;gap:8px;"><button class="btn btn-primary" onclick="saveResume()">保存</button>'+
+        '<button class="btn btn-outline" onclick="smartParseResume()">AI智能解析</button>'+
+        '<button class="btn btn-outline" onclick="uploadResume()">上传附件</button></div>'+
+        '<span style="font-size:12px;color:var(--text-muted);margin-left:8px;">'+(r.attachmentName||'')+'</span></div>';
+    }else if(tab==='apps'){
+        var apps=get(DB.apps).filter(function(a){return a.email===e;});
+        cont.innerHTML='<div class="card"><table>'+apps.map(function(a,i){return '<tr><td>'+a.jobTitle+'</td><td>'+a.time+'</td><td><span class="badge '+(a.status==='待查看'?'badge-warning':'badge-success')+'">'+a.status+'</span></td><td>'+(a.status==='待查看'?'<button class="btn btn-sm btn-danger" onclick="cancelApp('+i+')">取消</button>':'')+'</td></tr>';}).join('')+'</table>'+(apps.length?'':'<p style="text-align:center;padding:20px;color:var(--text-muted)">暂无投递记录</p>')+'</div>';
+    }else{
+        var favs=get(DB.favs)[e]||[];
+        var fJobs=get(DB.jobs).filter(function(j){return favs.includes(j.id);});
+        cont.innerHTML='<div class="card">'+fJobs.map(function(j){return '<div class="job-item"><div><h4>'+j.title+'</h4><div style="font-size:13px;color:var(--text-muted)">'+j.location+' | '+j.salary+'</div></div><button class="btn btn-sm btn-danger" onclick="toggleFav('+j.id+')">取消收藏</button></div>';}).join('')+(fJobs.length?'':'<p style="text-align:center;padding:20px;color:var(--text-muted)">暂无收藏</p>')+'</div>';
+    }
+}
+function saveResume(){
+    var e=curUser().email;var r=get(DB.resumes);if(!r[e])r[e]={};
+    r[e].name=document.getElementById('rName').value;
+    r[e].skills=document.getElementById('rSkills').value;
+    r[e].education=document.getElementById('rEdu').value;
+    r[e].experience=document.getElementById('rExp').value;
+    set(DB.resumes,r);toast('简历已保存');
+}
+function uploadResume(){
+    var inp=document.createElement('input');inp.type='file';inp.onchange=function(){
+        var f=inp.files[0];if(!f)return;var e=curUser().email;var r=get(DB.resumes);if(!r[e])r[e]={};r[e].attachmentName=f.name;set(DB.resumes,r);toast('上传成功');
+    };inp.click();
+}
+function cancelApp(i){
+    var e=curUser().email;var apps=get(DB.apps).filter(function(a){return a.email===e;});
+    var app=apps[i];if(!app)return;
+    get(DB.apps).splice(get(DB.apps).indexOf(app),1);set(DB.apps,get(DB.apps));
+    var cands=get(DB.cands);if(cands[app.jobTitle]){cands[app.jobTitle]=cands[app.jobTitle].filter(function(c){return c.name!==(get(DB.resumes)[e]?.name||e.split('@')[0]);});set(DB.cands,cands);}
+    toast('已取消');loadProfileTab('apps');
+}
+
+// ==================== HR PAGES ====================
+function renderHRJobs(){
+    document.getElementById('pageContainer').innerHTML='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><h2>职位管理</h2><button class="btn btn-primary" onclick="openPostJob()">+ 发布职位</button></div>'+
+    '<table id="hrJobTable"><thead><tr><th>职位</th><th>投递数</th><th>急聘</th><th>操作</th></tr></thead><tbody></tbody></table></div>';
+    renderHRJobTable();
+}
+function renderHRJobTable(){
+    var jobs=get(DB.jobs);var cands=get(DB.cands);
+    document.querySelector('#hrJobTable tbody').innerHTML=jobs.map(function(j){
+        return '<tr><td>'+j.title+'</td><td>'+(cands[j.title]||[]).length+'</td>'+
+        '<td><button class="btn btn-sm btn-outline" onclick="toggleUrgent('+j.id+')">'+(j.urgent?'取消急聘':'设为急聘')+'</button></td>'+
+        '<td style="display:flex;gap:4px;"><button class="btn btn-sm btn-outline" onclick="openCandidates(\''+j.title+'\')">候选人</button>'+
+        '<button class="btn btn-sm btn-outline" onclick="editJob('+j.id+')">编辑</button>'+
+        '<button class="btn btn-sm btn-danger" onclick="deleteJob('+j.id+')">删除</button></td></tr>';
+    }).join('');
+}
+function openPostJob(){
+    showModal('发布新职位',
+    '<div class="form-group"><input id="njTitle" placeholder="职位名称"></div>'+
+    '<div class="form-group"><input id="njLoc" placeholder="工作地点"></div>'+
+    '<div class="form-group"><input id="njSal" placeholder="薪资范围"></div>'+
+    '<div class="form-group"><input id="njTags" placeholder="技能标签（逗号分隔）"></div>'+
+    '<div class="form-group"><textarea id="njDesc" rows="3" placeholder="职位描述"></textarea></div>'+
+    '<div class="form-group"><select id="njType"><option>全职</option><option>兼职</option><option>实习</option></select></div>'+
+    '<button class="btn btn-primary" onclick="postNewJob()">发布</button>');
+}
+function postNewJob(){
+    var title=document.getElementById('njTitle').value.trim();if(!title)return toast('名称必填');
+    var jobs=get(DB.jobs);var id=jobs.length?Math.max.apply(null,jobs.map(function(j){return j.id;}))+1:1;
+    jobs.push({id:id,title:title,location:document.getElementById('njLoc').value,salary:document.getElementById('njSal').value,tags:document.getElementById('njTags').value,companyId:1,desc:document.getElementById('njDesc').value,type:document.getElementById('njType').value,urgent:false});
+    set(DB.jobs,jobs);closeModal();renderHRJobTable();toast('发布成功');
+}
+function editJob(id){toast('编辑功能开发中');}
+function deleteJob(id){
+    var job=get(DB.jobs).find(function(j){return j.id===id;});if(!job)return;
+    if(!confirm('确认删除 '+job.title+'？'))return;
+    set(DB.jobs,get(DB.jobs).filter(function(j){return j.id!==id;}));
+    var cands=get(DB.cands);delete cands[job.title];set(DB.cands,cands);
+    set(DB.apps,get(DB.apps).filter(function(a){return a.jobTitle!==job.title;}));
+    renderHRJobTable();toast('已删除');
+}
+function toggleUrgent(id){
+    var jobs=get(DB.jobs);var job=jobs.find(function(j){return j.id===id;});
+    if(job){job.urgent=!job.urgent;set(DB.jobs,jobs);renderHRJobTable();}
+}
+function openCandidates(title){
+    var cands=get(DB.cands)[title]||[];
+    showModal('候选人: '+title,
+    '<table id="candTable"><thead><tr><th>姓名</th><th>分数</th><th>状态</th><th>学历</th><th>操作</th></tr></thead><tbody></tbody></table>'+
+    '<div id="candActions" style="margin-top:12px;display:flex;gap:8px;"></div>');
+    updCandTable(title);
+}
+function updCandTable(title){
+    var cands=get(DB.cands)[title]||[];var tbody=document.querySelector('#candTable tbody');if(!tbody)return;
+    tbody.innerHTML=cands.map(function(c){
+        return '<tr><td><strong>'+c.name+'</strong><br><small style="color:var(--text-muted)">'+c.years+'年 | '+c.keywords+'</small></td>'+
+        '<td><span style="font-weight:700;color:var(--primary)">'+c.score+'</span></td>'+
+        '<td><span class="badge '+(c.status==='通过'?'badge-success':c.status==='面试邀请'?'badge-warning':'')+'">'+c.status+'</span></td>'+
+        '<td>'+c.edu+'</td>'+
+        '<td style="display:flex;gap:4px;flex-wrap:wrap;">'+
+        '<button class="btn btn-xs btn-outline" onclick="smartScore(\''+title+'\',\''+c.name+'\')" title="智能评分">🧠</button>'+
+        '<button class="btn btn-xs btn-outline" onclick="updateCand(\''+title+'\',\''+c.name+'\',\'通过\')">✓</button>'+
+        '<button class="btn btn-xs btn-primary" onclick="invite(\''+title+'\',\''+c.name+'\')">邀面试</button>'+
+        '<button class="btn btn-xs btn-danger" onclick="delCand(\''+title+'\',\''+c.name+'\')">✕</button></td></tr>';
+    }).join('');
+    // Add action buttons
+    var act=document.getElementById('candActions');
+    if(act) act.innerHTML='<button class="btn btn-outline btn-sm" onclick="renderKanban(\''+title+'\')">看板视图</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="batchAction(\''+title+'\')">批量操作</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="exportCSV(\''+title+'\')">导出CSV</button>';
+}
+function updateCand(title,name,status){
+    var cands=get(DB.cands);if(cands[title]){var c=cands[title].find(function(i){return i.name===name;});if(c)c.status=status;set(DB.cands,cands);updCandTable(title);}
+}
+function delCand(title,name){
+    if(!confirm('删除候选人 '+name+'？'))return;
+    var cands=get(DB.cands);if(cands[title]){cands[title]=cands[title].filter(function(c){return c.name!==name;});set(DB.cands,cands);updCandTable(title);}
+}
+function invite(title,name){
+    var email=null;var r=get(DB.resumes);for(var e in r){if(r[e].name===name){email=e;break;}}
+    get(DB.ivs).push({jobTitle:title,candidateName:name,candidateEmail:email,date:new Date().toISOString().split('T')[0],time:'10:00'});
+    set(DB.ivs,get(DB.ivs));updateCand(title,name,'面试邀请');
+    if(email) addNotif(email,'面试邀请: '+title);
+    toast('面试邀请已发送');
+}
+function addNotif(email,text){
+    var n=get(DB.notifs);if(!n[email])n[email]=[];
+    n[email].push({text:text,time:new Date().toLocaleString()});set(DB.notifs,n);updateAuthUI();
+}
+function renderHRTalent(){
+    var all={};
+    Object.entries(get(DB.cands)).forEach(function(entry){
+        entry[1].forEach(function(c){
+            if(!all[c.name])all[c.name]=Object.assign({},c,{jobTitle:entry[0]});
+        });
+    });
+    var pool=Object.values(all);
+    window._talentPool=pool;
+    document.getElementById('pageContainer').innerHTML=
+    '<div class="card"><h2>人才库</h2>'+
+    '<div style="display:flex;gap:8px;margin-bottom:16px;">'+
+    '<div class="form-group" style="flex:1;margin:0"><input id="talentSearch" placeholder="搜索人才..." oninput="filterTalent()"></div>'+
+    '<button class="btn btn-outline btn-sm" onclick="advancedTalentSearch()">高级搜索</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="exportTalentCSV()">导出CSV</button></div>'+
+    '<div id="talentList">'+
+    pool.map(function(c){
+        return '<div class="job-item"><div><strong>'+c.name+'</strong> - '+c.jobTitle+'<br><small style="color:var(--text-muted)">'+c.years+'年 | '+c.edu+' | 技能: '+c.keywords+'</small></div><div style="display:flex;gap:4px;align-items:center;"><span class="badge '+(c.status==='通过'?'badge-success':c.status==='面试邀请'?'badge-warning':'')+'">'+c.status+'</span><span style="font-weight:700;color:var(--primary);margin:0 8px;">'+c.score+'分</span><button class="btn btn-sm btn-outline" onclick="inviteDirect(\''+c.name+'\',\''+c.jobTitle+'\')">约面试</button></div></div>';
+    }).join('')+'</div></div>';
+}
+function filterTalent(){
+    var kw=(document.getElementById('talentSearch')||{}).value||'';
+    var pool=window._talentPool||[];
+    var filtered=kw?pool.filter(function(c){return c.name.includes(kw)||c.jobTitle.includes(kw)||c.keywords.includes(kw);}):pool;
+    document.getElementById('talentList').innerHTML=filtered.map(function(c){
+        return '<div class="job-item"><div><strong>'+c.name+'</strong> - '+c.jobTitle+'<br><small style="color:var(--text-muted)">'+c.years+'年 | '+c.edu+' | '+c.keywords+'</small></div><div style="display:flex;gap:4px;align-items:center;"><span class="badge badge-success">'+c.status+'</span><span style="font-weight:700;color:var(--primary);margin:0 8px;">'+c.score+'分</span><button class="btn btn-sm btn-outline" onclick="inviteDirect(\''+c.name+'\',\''+c.jobTitle+'\')">约面试</button></div></div>';
+    }).join('')||'<p style="text-align:center;padding:20px;color:var(--text-muted)">无匹配结果</p>';
+}
+function inviteDirect(name,title){
+    var cands=get(DB.cands);var c=(cands[title]||[]).find(function(i){return i.name===name;});
+    if(c){get(DB.ivs).push({jobTitle:title,candidateName:name,date:new Date().toISOString().split('T')[0],time:'10:00'});set(DB.ivs,get(DB.ivs));c.status='面试邀请';set(DB.cands,cands);toast('面试邀请已发送');}
+}
+function exportTalentCSV(){
+    var pool=window._talentPool||[];if(!pool.length)return toast('无数据');
+    var rows=pool.map(function(c){return '"'+c.name+'","'+c.jobTitle+'",'+c.score+',"'+c.status+'","'+c.keywords+'",'+c.years+',"'+c.edu+'"';}).join('\n');
+    var blob=new Blob(['\uFEFF姓名,职位,分数,状态,技能,年限,学历\n'+rows],{type:'text/csv;charset=utf-8'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='人才库_'+new Date().toISOString().split('T')[0]+'.csv';a.click();toast('导出成功');
+}
+function renderHRMessages(){document.getElementById('pageContainer').innerHTML='<div class="card"><h2>消息</h2><p style="color:var(--text-muted)">点击候选人旁的💬按钮发起对话</p></div>';}
+function renderHRDashboard(){
+    var jobs=get(DB.jobs);var cands=get(DB.cands);var apps=get(DB.apps);var ivs=get(DB.ivs);
+    var totalCands=0;Object.values(cands).forEach(function(v){totalCands+=v.length;});
+    var pendingApps=apps.filter(function(a){return a.status==='待查看';}).length;
+    var pendingIvs=ivs.length;
+    var allCands=[];Object.values(cands).forEach(function(v){allCands=allCands.concat(v);});
+    var passed=allCands.filter(function(c){return c.status==='通过';}).length;
+    var acceptRate=totalCands?Math.round((passed/totalCands)*100):0;
+    document.getElementById('pageContainer').innerHTML=
+    '<div class="card"><h2>招聘看板</h2><div style="color:var(--text-muted);font-size:13px;">'+new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'})+'</div></div>'+
+    '<div class="dashboard-grid">'+
+    '<div class="stat-card"><div class="stat-title">在招职位</div><div class="stat-value">'+jobs.length+'</div></div>'+
+    '<div class="stat-card"><div class="stat-title">候选人总数</div><div class="stat-value">'+totalCands+'</div></div>'+
+    '<div class="stat-card"><div class="stat-title">待处理投递</div><div class="stat-value">'+pendingApps+'</div></div>'+
+    '<div class="stat-card"><div class="stat-title">安排面试</div><div class="stat-value">'+pendingIvs+'</div></div>'+
+    '<div class="stat-card"><div class="stat-title">通过率</div><div class="stat-value">'+acceptRate+'%</div></div>'+
+    '<div class="stat-card"><div class="stat-title">急聘职位</div><div class="stat-value">'+jobs.filter(function(j){return j.urgent;}).length+'</div></div>'+
+    '</div>'+
+    '<div class="card">'+
+    '<h3>职位进度</h3>'+
+    '<table><thead><tr><th>职位</th><th>候选人</th><th>通过</th><th>面试</th><th>完成度</th></tr></thead><tbody>'+
+    jobs.map(function(j){
+        var cds=(cands[j.title]||[]);var p=cds.filter(function(c){return c.status==='通过';}).length;
+        var i=cds.filter(function(c){return c.status==='面试邀请';}).length;
+        var pct=cds.length?Math.round((p/cds.length)*100):0;
+        return '<tr><td>'+j.title+' '+(j.urgent?'<span class="badge badge-danger">急</span>':'')+'</td><td>'+cds.length+'</td><td>'+p+'</td><td>'+i+'</td><td><div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%"></div></div><small style="color:var(--text-muted)">'+pct+'%</small></td></tr>';
+    }).join('')+
+    '</tbody></table></div>'+
+    '<div class="card"><h3>面试日程</h3>'+
+    (ivs.length?ivs.map(function(iv){return '<div class="job-item"><div><strong>'+iv.candidateName+'</strong> → '+iv.jobTitle+'</div><div>'+iv.date+' '+(iv.time||'')+'</div></div>';}).join(''):'<p style="color:var(--text-muted);text-align:center;padding:20px;">暂无面试安排</p>')+
+    '<button class="btn btn-outline" onclick="scheduleInterview()" style="margin-top:8px;">+ 安排面试</button></div>';
+}
+function renderHRSettings(){document.getElementById('pageContainer').innerHTML='<div class="card"><h2>设置</h2><p style="color:var(--text-muted)">面试模板、团队管理等（敬请期待）</p></div>';}
+
+// ==================== ADVANCED FEATURES ====================
+function smartParseResume(){
+    var e=curUser().email;var r=get(DB.resumes)[e]||{};
+    var text=[r.name,r.skills,r.experience||''].join(' ');
+    if(!text.trim())return toast('请先填写简历信息');
+    var nameMatch=text.match(/姓名[：:]\s*(\S+)/i)||text.match(/^([^\s]{2,4})\n/m);
+    var skills=text.match(/(Python|Java|JavaScript|React|Vue|SQL|Docker|AWS|AI|ML|数据分析|产品设计|项目管理|运营|市场|Node\.js|TypeScript|Go|Rust|Kubernetes|Linux|Git)/gi)||[];
+    var eduMatch=text.match(/(本科|硕士|博士|专科|MBA|学士|研究生)/i);
+    var expMatch=text.match(/(\d+)\s*年/i);
+    var parsed={
+        name:nameMatch?nameMatch[1]:'未识别',
+        skills:[...new Set(skills)],
+        education:eduMatch?eduMatch[1]:'未识别',
+        experience:expMatch?expMatch[1]+'年':'未识别',
+        score:Math.min(30+(new Set(skills)).size*5,95)
+    };
+    showModal('AI智能解析',
+    '<div class="card"><p><strong>姓名:</strong> '+parsed.name+'</p>'+
+    '<p><strong>学历:</strong> '+parsed.education+'</p>'+
+    '<p><strong>经验:</strong> '+parsed.experience+'</p>'+
+    '<p><strong>技能:</strong> '+parsed.skills.map(function(s){return '<span class="badge badge-success">'+s+'</span>';}).join(' ')+'</p>'+
+    '<p><strong>预估匹配度:</strong> <span style="font-size:24px;font-weight:700;color:var(--primary)">'+parsed.score+'/100</span></p>'+
+    '<button class="btn btn-primary" onclick="applyParsed()">应用到简历</button></div>');
+    window._parsed=parsed;
+}
+function applyParsed(){
+    var p=window._parsed;if(!p)return;
+    var e=curUser().email;var r=get(DB.resumes);if(!r[e])r[e]={};
+    if(p.name!=='未识别')r[e].name=p.name;
+    if(p.skills.length)r[e].skills=p.skills.join(',');
+    if(p.education!=='未识别')r[e].education=p.education;
+    set(DB.resumes,r);closeModal();loadProfileTab('resume');toast('已应用!');
+}
+function smartScore(title,name){
+    var job=get(DB.jobs).find(function(j){return j.title===title;});
+    if(!job)return;var cands=get(DB.cands);
+    var c=cands[title].find(function(i){return i.name===name;});if(!c)return;
+    var jkw=(job.tags||'').toLowerCase().split(/[,\s]+/).filter(Boolean);
+    var ckw=(c.keywords||c.resume||'').toLowerCase();
+    var score=0;
+    jkw.forEach(function(k){if(ckw.includes(k))score+=Math.floor(100/jkw.length);});
+    score+=(ckw.includes('年')?15:5);
+    c.score=Math.min(score+30,98);
+    set(DB.cands,cands);updCandTable(title);
+    toast(c.name+' 智能评分: '+c.score+'/100');
+}
+function renderKanban(title){
+    var cands=get(DB.cands)[title]||[];
+    var stages={'待查看':[],'通过':[],'面试邀请':[],'已面试':[],'录用':[],'拒绝':[]};
+    cands.forEach(function(c){var s=stages[c.status]?c.status:'待查看';stages[s].push(c);});
+    var html='<div style="display:flex;gap:12px;overflow-x:auto;padding:10px;">';
+    Object.keys(stages).forEach(function(stage){
+        var items=stages[stage];
+        html+='<div class="kanban-col" data-stage="'+stage+'" style="min-width:180px;"><h4 style="margin-bottom:8px;">'+stage+' ('+items.length+')</h4>';
+        items.forEach(function(c){
+            html+='<div class="kanban-card" draggable="true" data-name="'+c.name+'" data-title="'+title+'">'+c.name+' <span style="color:var(--primary)">'+c.score+'</span></div>';
+        });
+        html+='</div>';
+    });
+    html+='</div><small style="color:var(--text-muted)">拖拽卡片到不同阶段更新状态</small>';
+    showModal(title+' - 招聘看板',html);
+    setTimeout(function(){
+        document.querySelectorAll('.kanban-card').forEach(function(el){
+            el.addEventListener('dragstart',function(e){e.dataTransfer.setData('text/plain',JSON.stringify({name:el.dataset.name,title:el.dataset.title}));});
+        });
+        document.querySelectorAll('.kanban-col').forEach(function(col){
+            col.addEventListener('dragover',function(e){e.preventDefault();});
+            col.addEventListener('drop',function(e){
+                e.preventDefault();var data=JSON.parse(e.dataTransfer.getData('text/plain'));
+                var stage=col.dataset.stage;var cands=get(DB.cands);
+                if(cands[data.title]){var c=cands[data.title].find(function(i){return i.name===data.name;});if(c){c.status=stage;set(DB.cands,cands);}}
+                toast(data.name+' → '+stage);
+                updCandTable(data.title);setTimeout(function(){renderKanban(data.title);},100);
+            });
+        });
+    },500);
+}
+function scheduleInterview(){
+    var jobs=get(DB.jobs);
+    showModal('安排面试',
+    '<div class="form-group"><select id="ivJob">'+jobs.map(function(j){return '<option value="'+j.title+'">'+j.title+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group"><input id="ivName" placeholder="候选人姓名"></div>'+
+    '<div class="form-group"><input id="ivDate" type="date" value="'+new Date().toISOString().split('T')[0]+'"></div>'+
+    '<div class="form-group"><input id="ivTime" type="time" value="10:00"></div>'+
+    '<button class="btn btn-primary" onclick="saveInterview()">安排</button>');
+}
+function saveInterview(){
+    var job=document.getElementById('ivJob').value;
+    var name=document.getElementById('ivName').value.trim();
+    if(!name)return toast('请输入候选人姓名');
+    get(DB.ivs).push({jobTitle:job,candidateName:name,date:document.getElementById('ivDate').value,time:document.getElementById('ivTime').value});
+    set(DB.ivs,get(DB.ivs));updateCand(job,name,'面试邀请');
+    closeModal();renderHRDashboard();toast('面试已安排');
+}
+function batchAction(title){
+    var cands=get(DB.cands)[title]||[];if(!cands.length)return toast('暂无候选人');
+    var html=cands.map(function(c){return '<label style="display:block;margin:4px 0"><input type="checkbox" class="batchSel" value="'+c.name+'"> '+c.name+' ('+c.status+')</label>';}).join('');
+    html+='<div class="form-group" style="margin-top:12px"><select id="batchAction"><option value="通过">通过</option><option value="拒绝">拒绝</option><option value="面试邀请">面试邀请</option></select></div><button class="btn btn-primary" onclick="execBatch(\''+title+'\')">执行</button>';
+    showModal('批量操作 - '+title,html);
+}
+function execBatch(title){
+    var sel=Array.from(document.querySelectorAll('.batchSel:checked')).map(function(c){return c.value;});
+    if(!sel.length)return toast('请选择候选人');
+    var action=document.getElementById('batchAction').value;
+    var cands=get(DB.cands);
+    sel.forEach(function(name){var c=cands[title].find(function(i){return i.name===name;});if(c)c.status=action;});
+    set(DB.cands,cands);closeModal();updCandTable(title);toast('已批量'+action+' '+sel.length+'人');
+}
+function exportCSV(title){
+    var cands=get(DB.cands)[title]||[];if(!cands.length)return toast('无数据');
+    var rows=cands.map(function(c){return '"'+c.name+'",'+c.score+',"'+c.status+'","'+(c.edu||'')+'","'+(c.keywords||'')+'",'+c.years;}).join('\n');
+    var blob=new Blob(['\uFEFF姓名,分数,状态,学历,技能,年限\n'+rows],{type:'text/csv;charset=utf-8'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=title+'_候选人_'+new Date().toISOString().split('T')[0]+'.csv';a.click();toast('导出成功');
+}
+function advancedTalentSearch(){
+    showModal('高级人才搜索',
+    '<div class="form-group"><input id="atsKeyword" placeholder="技能关键词（逗号分隔）"></div>'+
+    '<div class="form-group"><input id="atsExp" type="number" placeholder="最低工作年限" min="0"></div>'+
+    '<div class="form-group"><select id="atsEdu"><option value="">学历不限</option><option>本科</option><option>硕士</option><option>博士</option></select></div>'+
+    '<button class="btn btn-primary" onclick="runATSearch()">搜索</button><div id="atsResult" style="margin-top:12px;max-height:300px;overflow-y:auto;"></div>');
+}
+function runATSearch(){
+    var kw=(document.getElementById('atsKeyword').value||'').toLowerCase().split(/[,\s]+/).filter(Boolean);
+    var exp=parseInt(document.getElementById('atsExp').value)||0;
+    var edu=document.getElementById('atsEdu').value;
+    var all={};
+    Object.entries(get(DB.cands)).forEach(function(entry){
+        entry[1].forEach(function(c){
+            if(!all[c.name]){
+                var text=(c.keywords+' '+c.resume+' '+c.edu).toLowerCase();
+                var match=!kw.length;
+                if(kw.length)match=kw.every(function(k){return text.includes(k);});
+                if(match&&exp&&c.years<exp)match=false;
+                if(match&&edu&&!text.includes(edu))match=false;
+                if(match)all[c.name]=Object.assign({},c,{jobTitle:entry[0]});
+            }
+        });
+    });
+    var result=Object.values(all);
+    document.getElementById('atsResult').innerHTML=result.length?
+    result.map(function(c){return '<div class="job-item"><div><strong>'+c.name+'</strong> - '+c.jobTitle+'<br><small>'+c.years+'年 | '+c.edu+' | '+c.keywords+'</small></div><div><span style="font-weight:700;color:var(--primary)">'+c.score+'分</span></div></div>';}).join(''):
+    '<p style="text-align:center;padding:20px;color:var(--text-muted)">未找到匹配人才</p>';
+}
+
+// ==================== CHAT ====================
+var currentChatKey='';
+function openChat(jobTitle){
+    var key=curUser().email+'_'+jobTitle;currentChatKey=key;
+    var msgs=get(DB.chats)[key]||[];
+    var html=msgs.map(function(m){return '<div style="padding:4px 0"><strong>'+m.sender+'</strong>: '+m.text+'</div>';}).join('');
+    showModal('对话: '+jobTitle,
+    '<div style="height:200px;overflow-y:auto;padding:8px;background:var(--bg);border-radius:8px;margin-bottom:12px;">'+(html||'<span style="color:var(--text-muted)">开始对话...</span>')+'</div>'+
+    '<div class="form-group"><input id="chatInput" placeholder="输入消息..." onkeypress="if(event.key===\'Enter\')sendChat()"></div>'+
+    '<button class="btn btn-primary" onclick="sendChat()">发送</button>');
+}
+function sendChat(){
+    var text=document.getElementById('chatInput').value.trim();if(!text)return;
+    var chats=get(DB.chats);if(!chats[currentChatKey])chats[currentChatKey]=[];
+    chats[currentChatKey].push({sender:curUser().name,text:text,time:new Date().toLocaleTimeString()});
+    set(DB.chats,chats);openChat(currentChatKey.split('_')[1]);
+}
+
+// ==================== AUTH UI ====================
+function showLogin(){
+    showModal('登录',
+    '<div class="form-group"><input id="loginEmail" placeholder="邮箱" value="hr@talenthub.com"></div>'+
+    '<div class="form-group"><input id="loginPassword" type="password" placeholder="密码" value="123456"></div>'+
+    '<button class="btn btn-primary" onclick="login()" style="width:100%">登录</button>'+
+    '<p style="text-align:center;margin-top:8px;font-size:13px;color:var(--text-muted)">测试: hr@talenthub.com / 123456</p>');
+}
+function showRegister(){
+    showModal('注册',
+    '<div class="form-group"><input id="regEmail" placeholder="邮箱"></div>'+
+    '<div class="form-group"><input id="regPassword" type="password" placeholder="密码"></div>'+
+    '<div class="form-group"><input id="regConfirm" type="password" placeholder="确认密码"></div>'+
+    '<div class="form-group"><select id="regRole"><option value="jobseeker">求职者</option><option value="hr">HR</option></select></div>'+
+    '<button class="btn btn-primary" onclick="register()" style="width:100%">注册</button>');
+}
+function login(){
+    var email=document.getElementById('loginEmail').value.trim();
+    var pwd=document.getElementById('loginPassword').value;
+    var user=get(DB.users).find(function(u){return u.email===email&&u.password===pwd;});
+    if(!user)return toast('邮箱或密码错误');
+    set(DB.curr,email);closeModal();buildNav();renderPage(user.role==='hr'?'hr-jobs':'js-jobs');toast('欢迎回来, '+user.name);
+}
+function register(){
+    var email=document.getElementById('regEmail').value.trim();
+    var pwd=document.getElementById('regPassword').value;
+    if(pwd!==document.getElementById('regConfirm').value)return toast('密码不一致');
+    var role=document.getElementById('regRole').value;
+    var users=get(DB.users);if(users.find(function(u){return u.email===email;}))return toast('邮箱已注册');
+    users.push({email:email,password:pwd,role:role,name:email.split('@')[0]});
+    set(DB.users,users);set(DB.curr,email);
+    closeModal();buildNav();renderPage(role==='hr'?'hr-jobs':'js-jobs');toast('注册成功');
+}
+function logout(){localStorage.removeItem(DB.curr);toast('已退出');buildNav();renderPage('js-jobs');}
+function requireLogin(fn){curUser()?fn():(toast('请先登录'),showLogin());}
+
+// ==================== MODAL ====================
+function showModal(title,html){
+    var overlay=document.createElement('div');overlay.className='modal-overlay show';overlay.id='dynModal';
+    overlay.innerHTML='<div class="modal" style="position:relative"><button class="close-btn" onclick="closeModal()" style="position:absolute;top:12px;right:12px;">'+String.fromCharCode(10005)+'</button><h3 style="margin-bottom:16px;">'+title+'</h3>'+html+'</div>';
+    overlay.onclick=function(e){if(e.target===overlay)closeModal();};
+    document.body.appendChild(overlay);
+}
+function closeModal(){var m=document.getElementById('dynModal');if(m)m.remove();}
+function showNotifs(){
+    var list=get(DB.notifs)[curUser().email]||[];
+    showModal('通知',list.length?list.map(function(n){return '<div style="padding:8px;border-bottom:1px solid var(--border);"><strong>'+n.text+'</strong><br><small style="color:var(--text-muted)">'+n.time+'</small></div>';}).join(''):'<p style="color:var(--text-muted)">暂无通知</p>');
+    get(DB.notifs)[curUser().email]=[];set(DB.notifs,get(DB.notifs));updateAuthUI();
+}
+
+
+// ==================== NEW FEATURES ====================
+function fabAction(){
+    var menu=[
+        {label:'发布职位',action:function(){if(curRole()==='hr')openPostJob();else toast('仅HR可发布职位');}},
+        {label:'AI推荐',action:function(){requireLogin(aiRecommend);}},
+        {label:'高级搜索',action:function(){requireLogin(advancedTalentSearch);}},
+        {label:'安排面试',action:function(){if(curRole()==='hr')scheduleInterview();else toast('仅HR可用');}},
+        {label:'切换暗色',action:function(){toggleDark();}},
+    ];
+    var html=menu.map(function(m){return '<button class="btn btn-outline btn-sm" onclick="fabItemClick('+JSON.stringify(m.label)+')" style="display:block;width:100%;margin:4px 0;text-align:left;">'+m.label+'</button>';}).join('');
+    window._fabMenu=menu;
+    showModal('快捷操作',html+'<button class="btn btn-sm btn-outline" style="width:100%;margin-top:8px;" onclick="closeModal()">取消</button>');
+}
+function fabItemClick(label){
+    var menu=window._fabMenu||[];
+    var item=menu.find(function(m){return m.label===label;});
+    if(item){closeModal();item.action();}
+}
+function viewJobDetail(id){
+    var j=get(DB.jobs).find(function(jj){return jj.id===id;});
+    if(!j)return;
+    var comp=get(DB.companies).find(function(cc){return cc.id===j.companyId;})||{name:'未知',industry:'未知',size:'未知',score:'--',desc:'--'};
+    var cands=get(DB.cands)[j.title]||[];
+    var html='<div class="card"><h3>'+j.title+' '+(j.urgent?'<span class="badge badge-danger">急聘</span>':'')+'</h3>'+
+    '<span class="type-badge type-'+(j.type==='实习'?'intern':'full')+'">'+j.type+'</span>'+
+    '<div style="margin:12px 0;"><strong>公司:</strong> '+comp.name+' | '+comp.industry+' | '+comp.size+'</div>'+
+    '<div style="margin:8px 0;"><strong>地点:</strong> '+j.location+' | <strong>薪资:</strong> '+j.salary+'</div>'+
+    '<div style="margin:8px 0;"><strong>技能:</strong> '+j.tags.split(',').map(function(t){return '<span class="tag">'+t+'</span>';}).join(' ')+'</div>'+
+    '<div class="section-divider"></div>'+
+    '<h4>职位描述</h4><p>'+j.desc+'</p>'+
+    '<div class="section-divider"></div>'+
+    '<h4>公司简介</h4><p>'+comp.desc+'</p><p style="color:var(--text-muted);font-size:13px;">成立: '+comp.founded+' | 规模: '+comp.size+' | 评分: '+comp.score+'</p>'+
+    '<div class="section-divider"></div>'+
+    '<h4>候选人 ('+cands.length+')</h4>'+
+    (cands.length?cands.slice(0,5).map(function(c){return '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid var(--border);"><span>'+c.name+' ('+c.years+'年)</span><span style="color:var(--primary)">'+c.score+'分</span></div>';}).join(''):'<p style="color:var(--text-muted)">暂无候选人</p>')+
+    '</div>';
+    showModal('职位详情',html);
+}
+function quickApply(){
+    requireLogin(function(){
+        var jobs=get(DB.jobs);
+        var html='<p style="margin-bottom:12px;color:var(--text-muted);">选择要投递的职位（可多选）</p>'+jobs.map(function(j){return '<label style="display:block;margin:4px 0;"><input type="checkbox" class="qaJob" value="'+j.title+'"> '+j.title+' - '+j.salary+'</label>';}).join('')+'<button class="btn btn-primary" style="margin-top:12px;" onclick="execQuickApply()">一键投递</button>';
+        showModal('快速投递',html);
+    });
+}
+function execQuickApply(){
+    var sel=Array.from(document.querySelectorAll('.qaJob:checked')).map(function(c){return c.value;});
+    if(!sel.length)return toast('请至少选一个职位');
+    sel.forEach(function(t){applyJob(t);});closeModal();toast('已投递 '+sel.length+' 个职位');
+}
+function viewTimeline(){
+    requireLogin(function(){
+        var apps=get(DB.apps).filter(function(a){return a.email===curUser().email;});
+        if(!apps.length)return toast('暂无投递记录');
+        var html='<div class="timeline">';
+        apps.reverse().forEach(function(a){
+            var icon=a.status==='通过'?'✅':a.status==='已查看'?'👁️':'⏳';
+            html+='<div class="timeline-item"><strong>'+a.jobTitle+'</strong><br><small style="color:var(--text-muted)">'+a.time+' | <span class="badge '+(a.status==='通过'?'badge-success':'badge-warning')+'">'+a.status+'</span></small></div>';
+        });
+        html+='</div>';
+        showModal('投递时间线',html);
+    });
+}
+
+// ===== Update renderJSJobs to add view-detail and quick-apply buttons =====
+var _renderJSJobs_orig = renderJSJobs;
+renderJSJobs = function(){
+    _renderJSJobs_orig();
+};
+
+// ===== Update renderJobs to include detail view =====
+var _renderJobs_orig = renderJobs;
+renderJobs = function(jobs){
+    _renderJobs_orig(jobs);
+    var c=document.getElementById('jobList');
+    if(c){
+        var items=c.querySelectorAll('.job-item');
+        items.forEach(function(item,i){
+            var job=jobs[i];if(!job)return;
+            // Add "详情" button
+            var actions=item.querySelector('div:last-child');
+            if(actions){
+                var detailBtn=document.createElement('button');
+                detailBtn.className='btn btn-sm btn-outline';
+                detailBtn.textContent='详情';
+                detailBtn.onclick=function(){viewJobDetail(job.id);};
+                actions.insertBefore(detailBtn, actions.firstChild);
+            }
+            // Make title clickable
+            var title=item.querySelector('h3');
+            if(title){
+                title.style.cursor='pointer';
+                title.title='点击查看详情';
+                title.onclick=function(){viewJobDetail(job.id);};
+            }
+        });
+    }
+};
+
+// ===== Add quick-apply and timeline to Tools page =====
+var _renderTools_orig2 = renderTools;
+renderTools = function(){
+    _renderTools_orig2();
+    var cont=document.getElementById('pageContainer');
+    if(cont){
+        var toolsCard=cont.querySelector('.card');
+        if(toolsCard){
+            var extraBtns=document.createElement('div');
+            extraBtns.style.cssText='margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;';
+            extraBtns.innerHTML='<button class="btn btn-outline btn-sm" onclick="quickApply()">快速投递</button><button class="btn btn-outline btn-sm" onclick="viewTimeline()">投递时间线</button>';
+            toolsCard.appendChild(extraBtns);
+        }
+    }
+};
+
+
+// ==================== START ====================
+window.onload=function(){buildNav();renderPage('js-jobs');};
+</script>
+</body>
+</html>
